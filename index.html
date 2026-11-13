@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="hy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CELL 3D</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#0b2545,#030712 70%) fixed;color:#e2e8f0;font:15px/1.5 system-ui,"Noto Sans Armenian",sans-serif}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+button:focus-visible{outline:2px solid #5eead4;outline-offset:2px}
+canvas{display:block;width:100%;height:100%}
+.g{background:rgba(15,23,42,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(94,234,212,.2);border-radius:14px}
+nav{position:fixed;inset:8px 8px auto;z-index:9;display:flex;gap:6px;align-items:center;padding:6px 10px}
+nav b{color:#5eead4;letter-spacing:.2em}
+nav .r{margin-left:auto;display:flex;gap:4px}
+nav button,.tab{padding:5px 10px;border-radius:8px;color:#cbd5e1}
+button.a{background:rgba(45,212,191,.2);color:#99f6e4!important}
+nav{flex-wrap:wrap}
+@media(max-width:600px){nav button{padding:5px 6px;font-size:13px}}
+section{display:none}
+section.a{display:block;background:none;animation:f .35s}
+@keyframes f{from{opacity:0}}
+@media(prefers-reduced-motion:reduce){section.a{animation:none}}
+@media(max-width:600px){nav b{display:none}}
+#home{height:220vh}#hs{position:sticky;top:0;height:100vh}
+.hero{position:absolute;left:0;right:0;bottom:10vh;text-align:center;padding:0 16px;pointer-events:none}
+h1{font-weight:300;letter-spacing:.2em;font-size:clamp(26px,6vw,56px);color:#99f6e4;margin:0;text-shadow:0 0 24px rgba(45,212,191,.6)}
+.hero p{max-width:560px;margin:12px auto 0;color:#cbd5e1}
+.cta{pointer-events:auto;margin-top:22px;padding:12px 32px;border:1px solid rgba(94,234,212,.5)!important;border-radius:99px;background:rgba(45,212,191,.1);box-shadow:0 0 30px rgba(45,212,191,.3)}
+#explore{padding:64px 10px 10px}
+.wrap{display:grid;gap:10px;grid-template-columns:240px 1fr}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}#list{flex-direction:row!important;flex-wrap:wrap}}
+#list{padding:10px;display:flex;flex-direction:column;gap:6px;align-self:start}
+.it{display:flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:9px;overflow:hidden;font-size:14px}
+.it.s{border-color:#5eead4;background:rgba(45,212,191,.2)}
+.it button{padding:6px 8px}.it .n{flex:1;text-align:left;display:flex;gap:8px;align-items:center}
+.it i{width:10px;height:10px;border-radius:50%;flex:none}.it .h{opacity:1}.it .h.x{opacity:.3}
+#stage{position:relative;height:calc(100vh - 80px);min-height:440px}
+@media(max-width:800px){#stage{height:74vh}}
+#cv{display:grid;gap:8px;height:100%}
+#cv.sp{grid-template-columns:1fr 1fr}
+@media(max-width:800px){#cv.sp{grid-template-columns:1fr;grid-template-rows:1fr 1fr}}
+.cvb{position:relative;overflow:hidden}.cvb canvas{touch-action:none}
+.lb{position:absolute;right:12px;top:8px;font-size:12px;color:#94a3b8;z-index:2}
+#tabs{position:absolute;left:8px;top:8px;z-index:3;display:flex;gap:4px}
+#tabs .tab{font-size:13px}
+#info{position:absolute;left:8px;right:8px;bottom:8px;padding:10px 14px;max-height:40%;overflow:auto;z-index:3}
+.mu{color:#94a3b8;font-size:13px}
+#quiz{padding:84px 14px 30px;max-width:680px;margin:auto}
+.box{padding:20px}.box h2{font-size:18px;font-weight:500;margin:6px 0 14px}.c{text-align:center}
+.opt{display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.15)!important;border-radius:10px}
+.opt.ok{border-color:#34d399!important;background:rgba(16,185,129,.2)}.opt.no{border-color:#f87171!important;background:rgba(239,68,68,.2)}.opt.dim{opacity:.55}
+.b{margin-top:10px;padding:8px 24px;border:1px solid rgba(94,234,212,.5)!important;border-radius:99px}
+.okt{color:#6ee7b7}.not{color:#fca5a5}
+</style></head><body>
+<nav class="g"><b>CELL 3D</b><span id="pg"><button data-p="home" data-i="home"></button><button data-p="explore" data-i="explore"></button><button data-p="quiz" data-i="quiz"></button></span>
+<span class="r"><button data-l="hy">Հայ</button><button data-l="ru">Рус</button><button data-l="en">Eng</button></span></nav>
+<section id="home" class="a"><div id="hs"><div class="hero"><h1 data-i="title"></h1><p data-i="sub"></p><button class="cta" data-i="enter" onclick="go('explore')"></button></div></div></section>
+<section id="explore"><div class="wrap"><aside id="list" class="g"></aside>
+<div id="stage"><div id="tabs"><button class="tab g" data-m="animal" data-i="animal"></button><button class="tab g" data-m="plant" data-i="plant"></button><button class="tab g" data-m="split" data-i="split"></button></div>
+<div id="cv"></div><div id="info" class="g"></div></div></div></section>
+<section id="quiz"></section>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+const LG=['hy','ru','en'],$=s=>document.querySelector(s),L3=(hy,ru,en)=>({hy,ru,en});
+const T={
+hy:{home:'Գլխավոր',explore:'Բջիջը 3D-ում',quiz:'Թեստ',title:'ԲՋՋԻ ԿԱՌՈՒՑՎԱԾՔ',sub:'Բացահայտիր կյանքի ամենափոքր կառուցվածքային և գործառական միավորը',enter:'Մուտք գործել բջիջ',animal:'Կենդանական բջիջ',plant:'Բուսական բջիջ',split:'Համեմատություն',hint:'Սեղմիր օրգանոիդի վրա կամ ընտրիր ցանկից։ Պտտիր և մոտեցրու մկնիկով։',hide:'Ցույց տալ / թաքցնել',right:'Ճիշտ է։',wrong:'Սխալ է։ Ճիշտ պատասխանը՝ ',next:'Հաջորդը',finish:'Ավարտել',result:'Քո արդյունքը',again:'Կրկին անցնել',q:'Հարց',qd:'Ո՞ր կառուցվածքին է վերաբերում այս նկարագրությունը։',qp:'Ո՞ր կառուցվածքն է հանդիպում բուսական բջջում, բայց բացակայում է կենդանականում։',qb:'Ո՞ր կառուցվածքն է առկա և՛ բուսական, և՛ կենդանական բջջում։'},
+ru:{home:'Главная',explore:'Клетка в 3D',quiz:'Тест',title:'СТРОЕНИЕ КЛЕТКИ',sub:'Откройте для себя наименьшую структурную и функциональную единицу жизни',enter:'Войти в клетку',animal:'Животная клетка',plant:'Растительная клетка',split:'Сравнение',hint:'Нажмите на органоид или выберите из списка. Вращайте и приближайте мышью или пальцами.',hide:'Показать / скрыть',right:'Верно!',wrong:'Неверно. Правильный ответ: ',next:'Далее',finish:'Завершить',result:'Ваш результат',again:'Пройти заново',q:'Вопрос',qd:'Какая структура описана?',qp:'Какая структура есть в растительной клетке, но отсутствует в животной?',qb:'Какая структура есть и в растительной, и в животной клетке?'},
+en:{home:'Home',explore:'3D Cell',quiz:'Quiz',title:'CELL STRUCTURE',sub:'Discover the smallest structural and functional unit of life',enter:'Enter the Cell',animal:'Animal cell',plant:'Plant cell',split:'Compare',hint:'Click an organelle or pick one from the list. Drag to rotate, scroll or pinch to zoom.',hide:'Show / hide',right:'Correct!',wrong:'Incorrect. Correct answer: ',next:'Next',finish:'Finish',result:'Your score',again:'Try again',q:'Question',qd:'Which structure is described?',qp:'Which structure is found in plant cells but absent in animal cells?',qb:'Which structure is present in both plant and animal cells?'}};
+const INFO={
+membrane:{n:L3('Բջջաթաղանթ','Клеточная мембрана','Cell membrane'),f:L3('Բաժանում է բջիջը արտաքին միջավայրից և կարգավորում նյութերի անցումը։','Отделяет клетку от среды и регулирует транспорт веществ.','Separates the cell from its surroundings and controls what enters and leaves.')},
+cytoplasm:{n:L3('Ցիտոպլազմա','Цитоплазма','Cytoplasm'),f:L3('Բջջի ներքին միջավայրն է. այնտեղ են գտնվում օրգանոիդները և ընթանում են նյութափոխանակության ռեակցիաները։','Внутренняя среда клетки: в ней расположены органоиды и идут реакции обмена веществ.','The cell’s internal medium that holds the organelles and hosts many metabolic reactions.')},
+nucleus:{n:L3('Կորիզ','Ядро','Nucleus'),f:L3('Պահպանում է ժառանգական տեղեկատվությունը (ԴՆԹ) և կառավարում բջջի գործունեությունը։','Хранит наследственную информацию (ДНК) и управляет жизнедеятельностью клетки.','Stores hereditary information (DNA) and controls cell activity.')},
+nucleolus:{n:L3('Կորիզակ','Ядрышко','Nucleolus'),f:L3('Ձևավորում է ռիբոսոմների ենթամիավորները։','Формирует субъединицы рибосом.','Assembles the subunits of ribosomes.')},
+mito:{n:L3('Միտոքոնդրիումներ','Митохондрии','Mitochondria'),f:L3('Օքսիդացնում են օրգանական նյութերը և սինթեզում ԱԵՖ՝ բջջի էներգիայի աղբյուրը։','Окисляют органические вещества и синтезируют АТФ — главный источник энергии клетки.','Oxidize organic substances and synthesize ATP, the cell’s main energy currency.')},
+ribo:{n:L3('Ռիբոսոմներ','Рибосомы','Ribosomes'),f:L3('Սինթեզում են սպիտակուցներ՝ ըստ ինֆորմացիոն ՌՆԹ-ի։','Синтезируют белки по информации иРНК.','Build proteins following mRNA instructions.')},
+er:{n:L3('Էնդոպլազմային ցանց','Эндоплазматическая сеть','Endoplasmic reticulum'),f:L3('Խողովակների համակարգ է՝ նյութերի սինթեզի և տեղափոխման համար. կոշտ ցանցի վրա կան ռիբոսոմներ։','Система канальцев для синтеза и транспорта веществ; на шероховатой ЭПС расположены рибосомы.','A channel network for synthesis and transport of substances; rough ER carries ribosomes.')},
+golgi:{n:L3('Գոլջիի համալիր','Аппарат Гольджи','Golgi apparatus'),f:L3('Փոփոխում, տեսակավորում և փաթեթավորում է նյութերը պղպջակների մեջ։','Модифицирует, сортирует и упаковывает вещества в пузырьки.','Modifies, sorts and packages substances into vesicles.')},
+lyso:{n:L3('Լիզոսոմներ','Лизосомы','Lysosomes'),f:L3('Պարունակում են ֆերմենտներ, որոնք քայքայում են նյութերը և մաշված կառուցվածքները։','Содержат ферменты, расщепляющие вещества и отработавшие структуры.','Contain enzymes that break down substances and worn-out structures.')},
+wall:{n:L3('Բջջապատ','Клеточная стенка','Cell wall'),f:L3('Ցելյուլոզից կազմված ամուր շերտ է. պաշտպանում է բջիջը և պահպանում նրա ձևը։','Прочный слой из целлюлозы: защищает клетку и поддерживает её форму.','A rigid cellulose layer that protects the cell and maintains its shape.')},
+chloro:{n:L3('Քլորոպլաստներ','Хлоропласты','Chloroplasts'),f:L3('Այստեղ ընթանում է ֆոտոսինթեզը. լույսի էներգիան կուտակվում է օրգանական նյութերում։','В них идёт фотосинтез: энергия света запасается в органических веществах.','Site of photosynthesis: light energy is stored in organic compounds.')},
+vac:{n:L3('Վակուոլ','Вакуоль','Vacuole'),f:L3('Կուտակում է բջջահյութ և պահպանում բջջի տուրգորը։','Накапливает клеточный сок и поддерживает тургор клетки.','Stores cell sap and maintains turgor pressure.')}};
+const ring=(n,rx,rz,ry)=>Array.from({length:n},(_,i)=>{const a=i*2.4;return[Math.cos(a)*rx,Math.sin(i*1.7)*ry,Math.sin(a)*rz]});
+// k: sphere|cap|knot|box · p: positions · s: scale · o: opacity · sh: shell · r:0 not clickable
+const PARTS={
+animal:[
+{id:'membrane',k:'sphere',p:[[0,0,0]],s:2.3,c:'#38bdf8',o:.15,sh:1},
+{id:'cytoplasm',k:'sphere',p:[[0,0,0]],s:2.2,c:'#2dd4bf',o:.1,sh:1,r:0},
+{id:'nucleus',k:'sphere',p:[[-.2,.2,0]],s:.85,c:'#8b5cf6',o:.55},
+{id:'nucleolus',k:'sphere',p:[[-.2,.3,.3]],s:.27,c:'#e9d5ff'},
+{id:'mito',k:'cap',p:[[1.2,-.5,.5],[.4,-1.4,-.6],[-1.3,-.9,.7]],s:.38,c:'#f87171'},
+{id:'ribo',k:'sphere',p:ring(16,1.55,1.55,.8),s:.07,c:'#fde047'},
+{id:'er',k:'knot',p:[[-.2,.2,0]],s:1,c:'#f59e0b'},
+{id:'golgi',k:'sphere',p:[0,1,2,3].map(i=>[.9,.55+i*.16,-.8]),s:[.6,.07,.4],c:'#f472b6'},
+{id:'lyso',k:'sphere',p:[[-1.2,.8,.9],[.1,1.4,.7],[-.6,-1.4,-.2]],s:.2,c:'#4ade80'}],
+plant:[
+{id:'wall',k:'box',p:[[0,0,0]],s:[4.6,3.2,3.2],c:'#65a30d',o:.2,sh:1},
+{id:'membrane',k:'box',p:[[0,0,0]],s:[4.4,3,3],c:'#38bdf8',o:.12,sh:1,r:0},
+{id:'cytoplasm',k:'box',p:[[0,0,0]],s:[4.2,2.8,2.8],c:'#2dd4bf',o:.08,sh:1,r:0},
+{id:'vac',k:'sphere',p:[[.3,0,0]],s:[1.5,.9,.9],c:'#60a5fa',o:.45},
+{id:'nucleus',k:'sphere',p:[[-1.5,.6,.5]],s:.45,c:'#8b5cf6'},
+{id:'chloro',k:'sphere',p:[[-.8,1.15,.9],[1.4,1.1,-.6],[1.6,-1,.7],[-.3,-1.1,.9],[.2,1.2,-.9]],s:[.5,.28,.3],c:'#22c55e'},
+{id:'mito',k:'cap',p:[[-1.6,-.9,0],[.9,-1,-.9]],s:.3,c:'#f87171'},
+{id:'ribo',k:'sphere',p:ring(12,1.9,1.1,.9),s:.06,c:'#fde047'}]};
+const COLOR={};[...PARTS.animal,...PARTS.plant].forEach(p=>COLOR[p.id]=p.c);
+const IDS=Object.keys(INFO),Q=IDS.map((id,i)=>{const o=[3,5,8].map(d=>IDS[(i+d)%12]);o.splice(i%4,0,id);return{k:'d',o,a:i%4}})
+.concat([{k:'p',o:['wall','mito','nucleus','lyso'],a:0},{k:'p',o:['ribo','golgi','chloro','er'],a:2},{k:'b',o:['chloro','wall','mito','vac'],a:2}]);
+
+let Lg='hy',page='home',mode='animal',sel=null,hide=new Set(),V=[],mx=0,my=0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),geo={sphere:()=>new THREE.SphereGeometry(1,28,28),cap:()=>new THREE.CapsuleGeometry(.5,1,6,14),knot:()=>new THREE.TorusKnotGeometry(1,.12,120,8,2,3),box:()=>new THREE.BoxGeometry(1,1,1)};
+
+class View{
+  constructor(box,kind,hero){
+    this.box=box;this.hero=hero;this.R=kind==='plant'?8:7;this.th=0;this.ph=1.45;this.p=new Map();this.mv=0;this.m=[];
+    const r=this.r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));box.appendChild(r.domElement);
+    const s=this.s=new THREE.Scene(),c=this.c=new THREE.PerspectiveCamera(45,1,.1,100);
+    s.add(new THREE.AmbientLight(0xffffff,.7));
+    const a=new THREE.PointLight(0xffffff,1.1);a.position.set(5,5,5);s.add(a);
+    const b=new THREE.PointLight(0x8b5cf6,1);b.position.set(-6,-3,-4);s.add(b);
+    this.g=new THREE.Group();s.add(this.g);
+    PARTS[kind].forEach(o=>o.p.forEach((p,i)=>{
+      const m=new THREE.Mesh(geo[o.k](),new THREE.MeshStandardMaterial({color:o.c,emissive:o.c,emissiveIntensity:.12,roughness:.35,transparent:!!o.o,opacity:o.o||1,depthWrite:!o.o}));
+      m.position.set(...p);Array.isArray(o.s)?m.scale.set(...o.s):m.scale.setScalar(o.s);m.rotation.z=i*1.1;
+      m.userData={id:o.id,sh:!!o.sh,r:o.r===0};this.g.add(m);this.m.push(m)}));
+    if(hero){const q=new Float32Array(360).map(()=>(Math.random()-.5)*14),pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(q,3));
+      s.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x5eead4,size:.05,transparent:true,opacity:.7})));c.position.set(0,0,7);return}
+    const e=r.domElement;
+    e.addEventListener('pointerdown',v=>{e.setPointerCapture(v.pointerId);this.p.set(v.pointerId,[v.clientX,v.clientY]);this.mv=0});
+    e.addEventListener('pointermove',v=>{const o=this.p.get(v.pointerId);if(!o)return;
+      if(this.p.size===1){this.th-=(v.clientX-o[0])*.008;this.ph=clamp(this.ph-(v.clientY-o[1])*.008,.2,2.94)}
+      else{const q=[...this.p].find(([k])=>k!==v.pointerId)[1];this.R=clamp(this.R*Math.hypot(o[0]-q[0],o[1]-q[1])/Math.hypot(v.clientX-q[0],v.clientY-q[1]),3,13)}
+      this.mv+=Math.abs(v.clientX-o[0])+Math.abs(v.clientY-o[1]);this.p.set(v.pointerId,[v.clientX,v.clientY])});
+    e.addEventListener('pointerup',v=>{if(this.p.size===1&&this.mv<6)this.pick(v);this.p.delete(v.pointerId)});
+    e.addEventListener('pointercancel',v=>this.p.delete(v.pointerId));
+    e.addEventListener('wheel',v=>{v.preventDefault();this.R=clamp(this.R*(1+v.deltaY*.001),3,13)},{passive:false});
+  }
+  pick(v){const b=this.r.domElement.getBoundingClientRect(),rc=new THREE.Raycaster();
+    rc.setFromCamera(new THREE.Vector2((v.clientX-b.left)/b.width*2-1,-(v.clientY-b.top)/b.height*2+1),this.c);
+    const h=rc.intersectObjects(this.m.filter(m=>m.visible&&!m.userData.r)),x=h.find(i=>!i.object.userData.sh)||h[0];
+    select(x?x.object.userData.id:null)}
+  refresh(){this.m.forEach(m=>{m.visible=!hide.has(m.userData.id);m.material.emissiveIntensity=sel===m.userData.id?1.1:.12})}
+  tick(){const w=this.box.clientWidth,h=this.box.clientHeight;if(!w||!h)return;
+    if(this.W!==w||this.H!==h){this.W=w;this.H=h;this.r.setSize(w,h,false);this.c.aspect=w/h;this.c.updateProjectionMatrix()}
+    const c=this.c;
+    if(this.hero){this.g.rotation.y+=.002;const z=7-Math.min(scrollY/innerHeight,1)*4;
+      c.position.x+=(mx*1.2-c.position.x)*.05;c.position.y+=(my*.8-c.position.y)*.05;c.position.z+=(z-c.position.z)*.05}
+    else{if(sel===null&&!this.p.size)this.th+=.003;const s=Math.sin(this.ph)*this.R;c.position.set(s*Math.sin(this.th),Math.cos(this.ph)*this.R,s*Math.cos(this.th))}
+    c.lookAt(0,0,0);this.r.render(this.s,c)}
+}
+const hero=new View($('#hs'),'animal',true);hero.box.prepend(hero.r.domElement);
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth*2-1;my=-(e.clientY/innerHeight*2-1)});
+(function loop(){requestAnimationFrame(loop);hero.tick();V.forEach(v=>v.tick())})();
+
+function setMode(m){mode=m;V.forEach(v=>{v.r.dispose();v.box.remove()});V=[];
+  const kinds=m==='split'?['animal','plant']:[m];$('#cv').className=kinds.length>1?'sp':'';
+  kinds.forEach(k=>{const b=document.createElement('div');b.className='cvb g';b.innerHTML='<span class="lb" data-i="'+k+'"></span>';$('#cv').appendChild(b);V.push(new View(b,k))});
+  document.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('a',b.dataset.m===m));V.forEach(v=>v.refresh());applyLang()}
+function select(id){sel=id;V.forEach(v=>v.refresh());renderList();renderInfo()}
+function ids(){const s=new Set();(mode==='split'?['animal','plant']:[mode]).forEach(k=>PARTS[k].forEach(p=>s.add(p.id)));return[...s]}
+function renderList(){const el=$('#list');el.innerHTML='';ids().forEach(id=>{const d=document.createElement('div');d.className='it'+(sel===id?' s':'');
+  d.innerHTML='<button class="n"><i style="background:'+COLOR[id]+'"></i>'+INFO[id].n[Lg]+'</button><button class="h'+(hide.has(id)?' x':'')+'" title="'+T[Lg].hide+'">👁</button>';
+  d.children[0].onclick=()=>{hide.delete(id);select(id)};
+  d.children[1].onclick=()=>{hide.has(id)?hide.delete(id):hide.add(id);V.forEach(v=>v.refresh());renderList()};el.appendChild(d)})}
+function renderInfo(){const I=sel&&INFO[sel];$('#info').innerHTML=I?'<b style="color:#5eead4;font-size:17px">'+I.n[Lg]+'</b><div class="mu">'+LG.filter(x=>x!==Lg).map(x=>I.n[x]).join(' · ')+'</div><p style="margin:6px 0 0">'+I.f[Lg]+'</p>':'<span class="mu">'+T[Lg].hint+'</span>'}
+
+let qi=0,pk=null,score=0;
+function renderQuiz(){const el=$('#quiz'),t=T[Lg];
+  if(qi>=Q.length){el.innerHTML='<div class="g box c"><h2>'+t.result+': '+score+'/'+Q.length+'</h2><button class="b">'+t.again+'</button></div>';el.querySelector('.b').onclick=()=>{qi=0;score=0;pk=null;renderQuiz()};return}
+  const q=Q[qi],I=INFO[q.o[q.a]],txt=q.k==='d'?t.qd+' «'+I.f[Lg]+'»':t['q'+q.k];
+  el.innerHTML='<div class="g box"><span class="mu">'+t.q+' '+(qi+1)+'/'+Q.length+' · '+score+'</span><h2>'+txt+'</h2>'+
+  q.o.map((id,n)=>'<button class="opt '+(pk===null?'':n===q.a?'ok':n===pk?'no':'dim')+'" data-n="'+n+'">'+INFO[id].n[Lg]+'</button>').join('')+
+  (pk!==null?'<p class="'+(pk===q.a?'okt':'not')+'">'+(pk===q.a?t.right:t.wrong+I.n[Lg])+'</p><p>'+I.n[Lg]+': '+I.f[Lg]+'</p><button class="b" id="nx">'+(qi+1===Q.length?t.finish:t.next)+'</button>':'')+'</div>';
+  el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(pk!==null)return;pk=+b.dataset.n;if(pk===q.a)score++;renderQuiz()});
+  const nx=$('#nx');if(nx)nx.onclick=()=>{qi++;pk=null;renderQuiz()}}
+
+function applyLang(){document.documentElement.lang=Lg;document.querySelectorAll('[data-i]').forEach(e=>e.textContent=T[Lg][e.dataset.i]);
+  document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('a',b.dataset.l===Lg));renderList();renderInfo();renderQuiz()}
+function go(p){page=p;document.querySelectorAll('section').forEach(s=>s.classList.toggle('a',s.id===p));
+  document.querySelectorAll('[data-p]').forEach(b=>b.classList.toggle('a',b.dataset.p===p));scrollTo(0,0);if(p==='explore'&&!V.length)setMode(mode)}
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{Lg=b.dataset.l;applyLang()});
+applyLang();go('home');
+</script></body></html>
